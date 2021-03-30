@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { func } from "prop-types";
 
-//create your first component
+//create your first component-
 export function Home() {
-	//Declaración de Hooks del componente
+	//Declaración de Hooks del componente-
 	const [tasklist, setTaskList] = useState([]);
 	const [task, setTask] = useState("");
 	const [hoverli, setHoverli] = useState(false);
 
-	//Al iniciar consulta las tareas del usuario
+	//Al iniciar consulta las tareas del usuario-
 	useEffect(() => {
 		getTaskList();
 	}, []); //-> Se ejecuta solo al iniciar
 
-	//Función para obtener lista de tareas de la DB y asignarla al hook >tasklist<
+	//Función para obtener lista de tareas de la DB y asignarla al hook >tasklist<-
 	const getTaskList = () => {
 		var myHeaders = new Headers();
 		myHeaders.append("Content-Type", "application/json");
@@ -38,6 +39,8 @@ export function Home() {
 		myHeaders.append("Content-Type", "application/json");
 
 		var raw = JSON.stringify(tasklist);
+		console.log("Imprimiendo mi JSON");
+		console.log(raw);
 
 		var requestOptions = {
 			method: "PUT",
@@ -51,7 +54,7 @@ export function Home() {
 			requestOptions
 		)
 			.then(response => response.json())
-			.then(result => setTaskList(result))
+			.then(result => console.log(result))
 			.catch(error => console.log("error", error));
 	}
 
@@ -61,19 +64,40 @@ export function Home() {
 		if (e.key === "Enter" && task !== "") {
 			e.preventDefault();
 			//define la newTask que será añadida al array
+			redefinir();
+			handlingAllPromises();
+		} else if (e.key === "Enter" && task == "") {
+			alert("Upps, you must enter a task");
+		}
+	};
+
+	function handlingAllPromises() {
+		putTaskList();
+	}
+	function redefinir() {
+		return new Promise(() => {
 			const newTask = {
 				label: task,
 				done: false
 			};
 			//clona el tasklist actual y le añade la newTask
 			setTaskList([...tasklist].concat(newTask));
-			putTaskList();
+			console.log("imprimiendo el newtasklist", tasklist);
 			//reinicia el valor de task
 			setTask("");
-		} else if (e.key === "Enter" && task == "") {
-			alert("Upps, you must enter a task");
-		}
-	};
+		});
+	}
+	// function redefinir() {
+	// 	const newTask = {
+	// 		label: task,
+	// 		done: false
+	// 	};
+	// 	//clona el tasklist actual y le añade la newTask
+	// 	setTaskList([...tasklist].concat(newTask));
+	// 	console.log("imprimiendo el newtasklist", tasklist);
+	// 	//reinicia el valor de task
+	// 	setTask("");
+	// }
 
 	const generarLista = () => {
 		//recorre el objeto y genera los elementos de la lista
@@ -103,6 +127,7 @@ export function Home() {
 	const deleteTask = id => {
 		const updateTaskList = [...tasklist].filter(task => task.id !== id);
 		setTaskList(updateTaskList);
+		handlingAllPromises();
 	};
 
 	//genera el componente
