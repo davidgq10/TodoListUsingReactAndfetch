@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { func } from "prop-types";
 
 //create your first component-
 export function Home() {
@@ -33,6 +32,27 @@ export function Home() {
 			.catch(error => console.log("error", error));
 	};
 
+	//Evento que se genera al presionar una tecla del input newtask
+	const handleOnKeyPress = e => {
+		//Verifica si la tecla presionada es enter, true agrega elemento a lista de tareas
+		if (e.key === "Enter" && task !== "") {
+			e.preventDefault();
+			//define la newTask que será añadida al array
+			const newTask = {
+				label: task,
+				done: false
+			};
+			//clona el tasklist actual y le añade la newTask
+			setTaskList([...tasklist].concat(newTask));
+			console.log("imprimiendo el newtasklist", tasklist);
+			//reinicia el valor de task
+			setTask("");
+
+			handlingAllPromises();
+		} else if (e.key === "Enter" && task == "") {
+			alert("Upps, you must enter a task");
+		}
+	};
 	// función para actualizar las tareas de la DB
 	function putTaskList() {
 		var myHeaders = new Headers();
@@ -58,46 +78,9 @@ export function Home() {
 			.catch(error => console.log("error", error));
 	}
 
-	//Evento que se genera al presionar una tecla del input newtask
-	const handleOnKeyPress = e => {
-		//Verifica si la tecla presionada es enter, true agrega elemento a lista de tareas
-		if (e.key === "Enter" && task !== "") {
-			e.preventDefault();
-			//define la newTask que será añadida al array
-			redefinir();
-			handlingAllPromises();
-		} else if (e.key === "Enter" && task == "") {
-			alert("Upps, you must enter a task");
-		}
-	};
-
 	function handlingAllPromises() {
 		putTaskList();
 	}
-	function redefinir() {
-		return new Promise(() => {
-			const newTask = {
-				label: task,
-				done: false
-			};
-			//clona el tasklist actual y le añade la newTask
-			setTaskList([...tasklist].concat(newTask));
-			console.log("imprimiendo el newtasklist", tasklist);
-			//reinicia el valor de task
-			setTask("");
-		});
-	}
-	// function redefinir() {
-	// 	const newTask = {
-	// 		label: task,
-	// 		done: false
-	// 	};
-	// 	//clona el tasklist actual y le añade la newTask
-	// 	setTaskList([...tasklist].concat(newTask));
-	// 	console.log("imprimiendo el newtasklist", tasklist);
-	// 	//reinicia el valor de task
-	// 	setTask("");
-	// }
 
 	const generarLista = () => {
 		//recorre el objeto y genera los elementos de la lista
