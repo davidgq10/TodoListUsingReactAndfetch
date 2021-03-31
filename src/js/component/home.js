@@ -32,9 +32,9 @@ export function Home() {
 			.catch(error => console.log("error", error));
 	};
 
-	//Evento que se genera al presionar una tecla del input newtask
+	//Evento que se genera al presionar la tecla "Enter" del input newtask
 	const handleOnKeyPress = e => {
-		//Verifica si la tecla presionada es enter, true agrega elemento a lista de tareas
+		//Verifica si la tecla presionada es Enter e Input Not Null, agrega elemento a lista de tareas
 		if (e.key === "Enter" && task !== "") {
 			e.preventDefault();
 			//define la newTask que será añadida al array
@@ -42,24 +42,32 @@ export function Home() {
 				label: task,
 				done: false
 			};
-			//clona el tasklist actual y le añade la newTask
-			tasklist.concat(newTask);
-			console.log("imprimiendo el newtasklist", tasklist);
+
+			//inserta el newTask al final del array
+
+			const updateTaskList = [...tasklist].concat([newTask]);
+			setTaskList(updateTaskList);
+			console.log(
+				"imprimiendo mi tasklist luego de la primer definición de adición",
+				updateTaskList
+			);
 			//reinicia el valor de task
 			setTask("");
-			putTaskList(tasklist);
+
+			//llama a la función putTaskList que se encarga de actualizar la BD
+			putTaskList(updateTaskList);
 		} else if (e.key === "Enter" && task == "") {
 			alert("Upps, you must enter a task");
 		}
 	};
 
-	// función para actualizar las tareas de la DB
-	function putTaskList(tasklist) {
+	// función para actualizar las tareas de la DB cuando se agrega o elimina una tarea
+	function putTaskList(updateTaskList) {
 		var myHeaders = new Headers();
 		myHeaders.append("Content-Type", "application/json");
 
 		//var raw = JSON.stringify(tasklist.concat(task));
-		var raw = JSON.stringify(tasklist);
+		var raw = JSON.stringify(updateTaskList);
 
 		var requestOptions = {
 			method: "PUT",
@@ -71,18 +79,30 @@ export function Home() {
 		fetch(
 			"https://assets.breatheco.de/apis/fake/todos/user/davidgq",
 			requestOptions
-		)
-			.then(response => response.json())
+		) //luego de guardar sincroniza el tasklist de la DB
+			.then(response => response.text())
 			.then(result => console.log(result))
 			.catch(error => console.log("error", error));
 	}
 
 	// función para eliminar task al dar click al button
-	const deleteTask = id => {
-		tasklist.splice(id, 1);
-		// const updateTaskList = [...tasklist].filter(id => task.index !== id);
-		console.log("Estoy imprimiendo mi tasklist desde delele", tasklist);
-		putTaskList(tasklist);
+	const handleOnClickDelete = id => {
+		//se filtra el tasklist eliminando el elemento seleccionado
+		const updateTaskList = [...tasklist].splice(id, 1);
+		console.log(
+			"imprimiendo mi clone-splice tasklist luego de la primer definición de remosión",
+			updateTaskList
+		);
+		setTaskList(updateTaskList);
+
+		//verifica si existe almenos una tarea en el tasklist
+		if (tasklist.length > 0) {
+			//llama a la función putTaskList que se encarga de actualizar la BD
+			putTaskList(updateTaskList);
+		} else {
+			//llama a la función putTaskList que se encarga de actualizar la BD con la tarea default
+			putTaskList(fakeTask);
+		}
 	};
 
 	const generarLista = () => {
@@ -96,11 +116,11 @@ export function Home() {
 					<p className="d-inline-block text-secondary ml-4 fs-3 align-middle rounded-0">
 						{task.label}
 					</p>
-					{index == hoverli ? (
+					{index == hoverli && task.done == false ? (
 						<button
 							type="button"
 							className="btn btn-light float-right"
-							onClick={() => deleteTask(index)}>
+							onClick={() => handleOnClickDelete(index)}>
 							<i className="fas fa-times"></i>
 						</button>
 					) : null}
@@ -108,6 +128,15 @@ export function Home() {
 			);
 		});
 	};
+
+	//Debido a que la API no permite recibir arrays vacíos, al eliminar todas las tareas se crea un elemento default.
+	const fakeTask = [
+		{
+			label:
+				"Congratulations, you have completed all your tasks!!! it's time to rest!!! ",
+			done: true
+		}
+	];
 
 	//genera el componente
 	return (
@@ -122,10 +151,13 @@ export function Home() {
 					onChange={e => setTask(e.target.value)}
 					onKeyPress={e => handleOnKeyPress(e)}
 				/>
-				<button className="btn btn-primary col-md-auto">
+				<button
+					className="btn btn-primary col-md-auto"
+					onClick={putTaskList(fakeTask)}>
 					Delete all
 				</button>
 			</div>
+			{/*acá va la lisa de todos*/}
 			<ul className="list-group">{generarLista()}</ul>
 			<div>
 				<label htmlFor="list-group-item">
