@@ -43,23 +43,23 @@ export function Home() {
 				done: false
 			};
 			//clona el tasklist actual y le añade la newTask
-			setTaskList([...tasklist].concat(newTask));
+			tasklist.concat(newTask);
 			console.log("imprimiendo el newtasklist", tasklist);
 			//reinicia el valor de task
 			setTask("");
-			putTaskList(newTask);
+			putTaskList(tasklist);
 		} else if (e.key === "Enter" && task == "") {
 			alert("Upps, you must enter a task");
 		}
 	};
+
 	// función para actualizar las tareas de la DB
-	function putTaskList(task) {
+	function putTaskList(tasklist) {
 		var myHeaders = new Headers();
 		myHeaders.append("Content-Type", "application/json");
 
-		var raw = JSON.stringify(tasklist.concat(task));
-		console.log("Imprimiendo mi JSON");
-		console.log(raw);
+		//var raw = JSON.stringify(tasklist.concat(task));
+		var raw = JSON.stringify(tasklist);
 
 		var requestOptions = {
 			method: "PUT",
@@ -76,6 +76,14 @@ export function Home() {
 			.then(result => console.log(result))
 			.catch(error => console.log("error", error));
 	}
+
+	// función para eliminar task al dar click al button
+	const deleteTask = id => {
+		tasklist.splice(id, 1);
+		// const updateTaskList = [...tasklist].filter(id => task.index !== id);
+		console.log("Estoy imprimiendo mi tasklist desde delele", tasklist);
+		putTaskList(tasklist);
+	};
 
 	const generarLista = () => {
 		//recorre el objeto y genera los elementos de la lista
@@ -99,12 +107,6 @@ export function Home() {
 				</li>
 			);
 		});
-	};
-
-	// función para eliminar task al dar click al button
-	const deleteTask = id => {
-		const updateTaskList = [...tasklist].filter(task => task.id !== id);
-		setTaskList(updateTaskList);
 	};
 
 	//genera el componente
