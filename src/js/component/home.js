@@ -47,18 +47,17 @@ export function Home() {
 			console.log("imprimiendo el newtasklist", tasklist);
 			//reinicia el valor de task
 			setTask("");
-
-			handlingAllPromises();
+			putTaskList(newTask);
 		} else if (e.key === "Enter" && task == "") {
 			alert("Upps, you must enter a task");
 		}
 	};
 	// función para actualizar las tareas de la DB
-	function putTaskList() {
+	function putTaskList(task) {
 		var myHeaders = new Headers();
 		myHeaders.append("Content-Type", "application/json");
 
-		var raw = JSON.stringify(tasklist);
+		var raw = JSON.stringify(tasklist.concat(task));
 		console.log("Imprimiendo mi JSON");
 		console.log(raw);
 
@@ -76,10 +75,6 @@ export function Home() {
 			.then(response => response.json())
 			.then(result => console.log(result))
 			.catch(error => console.log("error", error));
-	}
-
-	function handlingAllPromises() {
-		putTaskList();
 	}
 
 	const generarLista = () => {
@@ -110,7 +105,6 @@ export function Home() {
 	const deleteTask = id => {
 		const updateTaskList = [...tasklist].filter(task => task.id !== id);
 		setTaskList(updateTaskList);
-		handlingAllPromises();
 	};
 
 	//genera el componente
