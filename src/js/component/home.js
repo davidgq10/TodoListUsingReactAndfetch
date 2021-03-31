@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-//create your first component-
+//create your first component
 export function Home() {
 	//Declaración de Hooks del componente-
 	const [tasklist, setTaskList] = useState([]);
 	const [task, setTask] = useState("");
 	const [hoverli, setHoverli] = useState(false);
 
-	//Al iniciar consulta las tareas del usuario-
+	//Al iniciar consulta las tareas del usuario
 	useEffect(() => {
 		getTaskList();
 	}, []); //-> Se ejecuta solo al iniciar
@@ -42,20 +42,17 @@ export function Home() {
 				label: task,
 				done: false
 			};
-
-			//inserta el newTask al final del array
-
-			const updateTaskList = [...tasklist].concat([newTask]);
-			setTaskList(updateTaskList);
-			console.log(
-				"imprimiendo mi tasklist luego de la primer definición de adición",
-				updateTaskList
-			);
-			//reinicia el valor de task
-			setTask("");
-
-			//llama a la función putTaskList que se encarga de actualizar la BD
-			putTaskList(updateTaskList);
+			if (tasklist.length == 1 && tasklist[0].done == true) {
+				putTaskList([newTask]);
+				setTask("");
+			} else {
+				//inserta el newTask al final del array
+				const updateTaskList = [...tasklist].concat([newTask]);
+				//reinicia el valor de task
+				setTask("");
+				//llama a la función putTaskList que se encarga de actualizar la BD
+				putTaskList(updateTaskList);
+			}
 		} else if (e.key === "Enter" && task == "") {
 			alert("Upps, you must enter a task");
 		}
@@ -81,29 +78,35 @@ export function Home() {
 			requestOptions
 		) //luego de guardar sincroniza el tasklist de la DB
 			.then(response => response.text())
+			.then(setTaskList(updateTaskList))
 			.then(result => console.log(result))
+			// en caso de que al guardar se genere un error se vuelve a llamar la lista de tareas de la BD
 			.catch(error => console.log("error", error));
 	}
 
 	// función para eliminar task al dar click al button
 	const handleOnClickDelete = id => {
 		//se filtra el tasklist eliminando el elemento seleccionado
-		const updateTaskList = [...tasklist].splice(id, 1);
-		console.log(
-			"imprimiendo mi clone-splice tasklist luego de la primer definición de remosión",
-			updateTaskList
-		);
-		setTaskList(updateTaskList);
+		let updateTaskList = [...tasklist];
+		updateTaskList.splice(id, 1);
 
 		//verifica si existe almenos una tarea en el tasklist
-		if (tasklist.length > 0) {
+		if (updateTaskList.length > 0) {
 			//llama a la función putTaskList que se encarga de actualizar la BD
 			putTaskList(updateTaskList);
 		} else {
-			//llama a la función putTaskList que se encarga de actualizar la BD con la tarea default
+			//Debido a que la API no permite que quede un listado NULL, llama a la función putTaskList que se encarga de actualizar la BD con la tarea fakeTask
 			putTaskList(fakeTask);
 		}
 	};
+	//Debido a que la API no permite recibir arrays vacíos, al eliminar todas las tareas se crea un elemento default.
+	const fakeTask = [
+		{
+			label:
+				"Congratulations, you have completed all your tasks!!! it's time to rest!!! ",
+			done: true
+		}
+	];
 
 	const generarLista = () => {
 		//recorre el objeto y genera los elementos de la lista
@@ -129,15 +132,6 @@ export function Home() {
 		});
 	};
 
-	//Debido a que la API no permite recibir arrays vacíos, al eliminar todas las tareas se crea un elemento default.
-	const fakeTask = [
-		{
-			label:
-				"Congratulations, you have completed all your tasks!!! it's time to rest!!! ",
-			done: true
-		}
-	];
-
 	//genera el componente
 	return (
 		<div className="container mt-4">
@@ -146,14 +140,14 @@ export function Home() {
 				<input
 					type="text"
 					placeholder="Type a new task"
-					className="form-control text-secondary rounded-0"
+					className="form-control text-secondary rounded-0 mb-2"
 					value={task}
 					onChange={e => setTask(e.target.value)}
 					onKeyPress={e => handleOnKeyPress(e)}
 				/>
 				<button
-					className="btn btn-primary col-md-auto"
-					onClick={putTaskList(fakeTask)}>
+					className="btn btn-primary col-md-auto mb-2"
+					onClick={() => putTaskList(fakeTask)}>
 					Delete all
 				</button>
 			</div>
@@ -163,8 +157,8 @@ export function Home() {
 				<label htmlFor="list-group-item">
 					<p className="text-secondary ml-5 mt-4">
 						<i>
-							{tasklist.length == 0
-								? "No tasks, add a task"
+							{tasklist.length == 1 && tasklist[0].done == true
+								? "No tasks, add a task!"
 								: tasklist.length + " item left"}
 						</i>
 					</p>
